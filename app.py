@@ -1,0 +1,77 @@
+import discord
+from discord.ext import commands
+from githhub_script import get_repo_structure
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Intents are required to specify what events your bot can receive
+intents = discord.Intents.default()
+intents.message_content = True  # Needed to read message content
+
+# Prefix for bot commands (like !ping)
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# Event: When bot is ready
+@bot.event
+async def on_ready():
+    print(f"✅ Logged in as {bot.user} (ID: {bot.user.id})")
+    print("------")
+
+# Event: When someone sends a message
+@bot.event
+async def on_message(message):
+    # Prevent bot from replying to itself
+    if message.author == bot.user:
+        return
+
+    if message.content.lower() == "hello":
+        await message.channel.send(f"Hey {message.author.name}! 👋")
+
+    # Allow command processing to still happen
+    await bot.process_commands(message)
+
+# Command example: !ping
+@bot.command()
+async def ping(ctx):
+    await ctx.send("Pong! 🏓")
+
+# Command example: !say <message>
+@bot.command()
+async def say(ctx, *, message):
+    await ctx.send(message)
+
+@bot.command()
+async def helpme(ctx):
+    help_text = """
+    **Available Commands:**
+    `!ping` - Check if the bot is responsive.
+    `!say <message>` - Make the bot repeat your message.
+    `!repo_structure <GitHub Repo URL>` - Fetch and display the directory structure of a GitHub repository.
+    """
+    await ctx.send(help_text)
+
+@bot.command()
+async def repo_structure(ctx, *, url):
+    """Fetch and display the directory structure of a GitHub repository."""
+    if url is None:
+        await ctx.send("Please provide a GitHub repository URL.")
+        return
+    structure = get_repo_structure(url)
+
+    max_length = 1800  # leave space for formatting
+    output = str(structure)
+    if len(output) > max_length:
+        output = output[:max_length] + "\n... (truncated)"
+    await ctx.send(f"Repository Structure:\n```{output}```")
+
+@bot.command()
+async def wtfisthis(ctx, *, query):
+    """Uses AI to tell you whats going on in this repo"""
+    # Placeholder for AI integration
+    await ctx.send(f"AI analysis for '{query}' is not yet implemented.")
+
+
+# Run your bot
+bot.run(str(os.getenv("BOT_TOKEN")))
