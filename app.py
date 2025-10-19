@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from githhub_script import get_repo_structure
+from githhub_script import get_repo_structure, repo_dict
+from llms import analyze_repository_structure
 import os
 from dotenv import load_dotenv
 import io
@@ -71,11 +72,13 @@ async def repo_structure(ctx, *, url):
         await ctx.send(f"Repository Structure:\n```{output}```")
 
 @bot.command()
-async def wtfisthis(ctx, *, query):
+async def wtfisthis(ctx, *, repository_url):
     """Uses AI to tell you whats going on in this repo"""
     # Placeholder for AI integration
-    await ctx.send(f"AI analysis for '{query}' is not yet implemented.")
-
+    structure = get_repo_structure(repository_url)
+    analysis = analyze_repository_structure(structure)
+    file = io.StringIO(analysis)
+    await ctx.send(f"Analysis of the repository:\n", file=discord.File(file, filename="repo_analysis.md"))
 
 # Run your bot
 bot.run(str(os.getenv("BOT_TOKEN")))

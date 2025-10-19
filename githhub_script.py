@@ -72,3 +72,9 @@ def get_repo_structure(repo_url):
     structure = dir_structure(owner, repo)
     structure = tree_structure_str(structure)
     return structure
+
+def repo_dict(repo_url):
+    """Get the directory structure as a nested dictionary from a GitHub repository URL."""
+    owner, repo = parse_url(repo_url)
+    structure = dir_structure(owner, repo)
+    return structure
