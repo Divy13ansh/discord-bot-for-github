@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from githhub_script import get_repo_structure, repo_dict, get_contributors
+from githhub_script import get_repo_structure, repo_dict, get_contributors, get_commit_history, get_file_content
 from llms import analyze_repository_structure
 import os
 from dotenv import load_dotenv
@@ -97,6 +97,35 @@ async def contributors(ctx, *, repo_url):
             await ctx.send(f"**Contributors:**\n{contributor_list}")
     except Exception as e:
         await ctx.send(f"An error occurred while fetching contributors: {str(e)}")
+
+@bot.command()
+async def commit_history(ctx, *, repo_url):
+    """Fetch and display the commit history for a given GitHub repository URL."""
+    try:
+        commits = get_commit_history(repo_url)
+        if not commits:
+            await ctx.send("No commits found for this repository.")
+            return
+
+        commit_lines = [f"- {commit['sha'][:7]} by {commit['author']} on {commit['date']}: {commit['message']}" for commit in commits]
+        commit_history_str = "\n".join(commit_lines)
+
+        if len(commit_history_str) > 1900:
+            file = io.StringIO(commit_history_str)
+            await ctx.send("Commit history is too long, sending as a file:", file=discord.File(file, filename="commit_history.txt"))
+        else:
+            await ctx.send(f"**Commit History:**\n{commit_history_str}")
+    except Exception as e:
+        await ctx.send(f"An error occurred while fetching commit history: {str(e)}")
+
+@bot.command()
+async def file_content(ctx, repo_url, file_path):
+    """Fetch and display the content of a specific file from a GitHub repository."""
+    try:
+        content = get_file_content(repo_url, file_path)
+        await ctx.send(f"Content of `{file_path}` from `{repo_url}`:\n```{content}```")
+    except Exception as e:
+        await ctx.send(f"An error occurred while fetching file content: {str(e)}")
 
 # Run your bot
 bot.run(str(os.getenv("BOT_TOKEN")))

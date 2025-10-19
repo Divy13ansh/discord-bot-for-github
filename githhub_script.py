@@ -86,7 +86,7 @@ def get_contributors(repo_url):
 
     contributors = []
     page = 1
-    per_page = 30
+    per_page = 100
 
     while True:
         paged_url = f"{url}?page={page}&per_page={per_page}"
@@ -99,3 +99,45 @@ def get_contributors(repo_url):
         page += 1
 
     return contributors
+
+def get_commit_history(repo_url):
+    """Fetch the commit history for a given GitHub repository URL."""
+    owner, repo = parse_url(repo_url)
+    url = f"https://api.github.com/repos/{owner}/{repo}/commits"
+
+    commits = []
+    page = 1
+    per_page = 1000
+
+    while True:
+        paged_url = f"{url}?page={page}&per_page={per_page}"
+        r = requests.get(paged_url, headers=headers)
+        r.raise_for_status()
+        data = r.json()
+        if not data:
+            break
+        commits.extend([{
+            "sha": commit["sha"],
+            "author": commit["commit"]["author"]["name"],
+            "date": commit["commit"]["author"]["date"],
+            "message": commit["commit"]["message"]
+        } for commit in data])
+        page += 1
+
+    return commits
+
+def get_file_content(repo_url, file_path):
+    """Fetch the content of a specific file in a GitHub repository."""
+    owner, repo = parse_url(repo_url)
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}"
+
+    r = requests.get(url, headers=headers)
+    r.raise_for_status()
+    data = r.json()
+
+    if "content" in data:
+        import base64
+        content = base64.b64decode(data["content"]).decode('utf-8')
+        return content
+    else:
+        raise ValueError("File content not found.")
