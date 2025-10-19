@@ -3,6 +3,7 @@ from discord.ext import commands
 from githhub_script import get_repo_structure
 import os
 from dotenv import load_dotenv
+import io
 
 load_dotenv()
 
@@ -60,11 +61,14 @@ async def repo_structure(ctx, *, url):
         return
     structure = get_repo_structure(url)
 
-    max_length = 1800  # leave space for formatting
+    max_length = 1900  # leave space for formatting
     output = str(structure)
     if len(output) > max_length:
+        file = io.StringIO(output)
         output = output[:max_length] + "\n... (truncated)"
-    await ctx.send(f"Repository Structure:\n```{output}```")
+        await ctx.send("Repository structure is too long, sending as a file:", file=discord.File(file, filename="repo_structure.txt"))
+    else:
+        await ctx.send(f"Repository Structure:\n```{output}```")
 
 @bot.command()
 async def wtfisthis(ctx, *, query):
