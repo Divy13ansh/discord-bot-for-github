@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from githhub_script import get_repo_structure, repo_dict, get_contributors, get_commit_history, get_file_content
-from llms import analyze_repository_structure
+from llms import analyze_repository_structure, analyze_file_content, summarize_file_content
 import os
 from dotenv import load_dotenv
 import io
@@ -51,6 +51,11 @@ async def helpme(ctx):
     `!ping` - Check if the bot is responsive.
     `!say <message>` - Make the bot repeat your message.
     `!repo_structure <GitHub Repo URL>` - Fetch and display the directory structure of a GitHub repository.
+    `!wtfisthis <GitHub Repo URL>` - Analyze the repository structure using AI and provide insights.
+    `!contributors <GitHub Repo URL>` - Fetch and display the list of contributors for a given GitHub repository.
+    `!commit_history <GitHub Repo URL>` - Fetch and display the commit history for a given GitHub repository.
+    `!file_content <GitHub Repo URL> <file path>` - Fetch and display the content of a specific file from a GitHub repository.
+    `!wtfishappening <GitHub Repo URL> <file path>` - Analyze the content of a specific file in a GitHub repository using AI.
     """
     await ctx.send(help_text)
 
@@ -126,6 +131,27 @@ async def file_content(ctx, repo_url, file_path):
         await ctx.send(f"Content of `{file_path}` from `{repo_url}`:\n```{content}```")
     except Exception as e:
         await ctx.send(f"An error occurred while fetching file content: {str(e)}")
+
+@bot.command()
+async def wtfishappening(ctx, repo_url, file_path):
+    """Analyze the content of a specific file in a GitHub repository using AI."""
+    try:
+        content = get_file_content(repo_url, file_path)
+        analysis = analyze_file_content(content)
+        file = io.StringIO(analysis)
+        await ctx.send(f"Analysis of the file `{file_path}`:\n", file=discord.File(file, filename="file_analysis.md"))
+    except Exception as e:
+        await ctx.send(f"An error occurred while analyzing the file: {str(e)}")
+
+@bot.command()
+async def summarizefile(ctx, repo_url, file_path):
+    """Summarize the content of a specific file in a GitHub repository using AI."""
+    try:
+        content = get_file_content(repo_url, file_path)
+        summary = summarize_file_content(content)
+        await ctx.send(f"Summary of the file `{file_path}`:\n {summary}")
+    except Exception as e:
+        await ctx.send(f"An error occurred while summarizing the file: {str(e)}")
 
 # Run your bot
 bot.run(str(os.getenv("BOT_TOKEN")))

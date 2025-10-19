@@ -98,3 +98,54 @@ def analyze_repository_structure(repo_structure):
     )
     reply = response.choices[0].message.content
     return reply
+
+
+def analyze_file_content(file_content):
+    """Use Azure OpenAI to analyze the content of a specific file and provide insights."""
+    prompt = f"""
+    You are an expert software engineer and code reviewer. Carefully analyze the following file content:
+
+    {file_content}
+
+    Please provide a comprehensive analysis including:
+
+    1. **Purpose and Functionality:** Describe the overall purpose of the file, what problem it is solving, and how it fits into a larger project or system.
+
+    2. **Key Components:** Identify important classes, functions, variables, and modules used, and explain their roles.
+
+    3. **Workflow and Logic:** Explain the main logic, data flow, and control structures, highlighting any important algorithms or patterns.
+
+    4. **Dependencies:** List external libraries, frameworks, or modules the file relies on, and their relevance.
+
+    5. **Strengths and Potential Issues:** Point out well-designed aspects, potential bugs, performance considerations, or maintainability concerns.
+
+    6. **Suggestions/Recommendations:** Recommend any improvements, best practices, or optimizations if applicable.
+
+    Ensure your analysis is clear, structured, and formatted properly using Markdown headings, bullet points, and code blocks where appropriate.
+    """
+    response = client.chat.completions.create(
+        model=deployment_name,
+        messages=[
+            {"role": "system", "content": "You are an expert software engineer."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7,
+        max_tokens=2000,
+    )
+    reply = response.choices[0].message.content
+    return reply
+    
+def summarize_file_content(file_content):
+    """Use Azure OpenAI to summarize the content of a specific file."""
+    prompt = f"Summarize the following code file content in a concise manner:\n\n{file_content}"
+    response = client.chat.completions.create(
+        model=deployment_name,
+        messages=[
+            {"role": "system", "content": "You are an expert software summarizer."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.5,
+        max_tokens=1500,
+    )
+    reply = response.choices[0].message.content
+    return reply
