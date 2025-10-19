@@ -94,7 +94,7 @@ def analyze_repository_structure(repo_structure):
             }
         ],
         temperature=0.7,
-        max_tokens=1500,
+        max_tokens=2000,
     )
     reply = response.choices[0].message.content
     return reply

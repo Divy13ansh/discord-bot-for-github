@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from githhub_script import get_repo_structure, repo_dict
+from githhub_script import get_repo_structure, repo_dict, get_contributors
 from llms import analyze_repository_structure
 import os
 from dotenv import load_dotenv
@@ -79,6 +79,24 @@ async def wtfisthis(ctx, *, repository_url):
     analysis = analyze_repository_structure(structure)
     file = io.StringIO(analysis)
     await ctx.send(f"Analysis of the repository:\n", file=discord.File(file, filename="repo_analysis.md"))
+
+@bot.command()
+async def contributors(ctx, *, repo_url):
+    """Fetch and display the list of contributors for a given GitHub repository URL."""
+    try:
+        contributors = get_contributors(repo_url)
+        if not contributors:
+            await ctx.send("No contributors found for this repository.")
+            return
+
+        contributor_list = "\n".join([f"- {contributor}" for contributor in contributors])
+        if len(contributor_list) > 1900:
+            file = io.StringIO(contributor_list)
+            await ctx.send("Contributor list is too long, sending as a file:", file=discord.File(file, filename="contributors.txt"))
+        else:
+            await ctx.send(f"**Contributors:**\n{contributor_list}")
+    except Exception as e:
+        await ctx.send(f"An error occurred while fetching contributors: {str(e)}")
 
 # Run your bot
 bot.run(str(os.getenv("BOT_TOKEN")))

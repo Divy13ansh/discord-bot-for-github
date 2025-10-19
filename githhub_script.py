@@ -78,3 +78,24 @@ def repo_dict(repo_url):
     owner, repo = parse_url(repo_url)
     structure = dir_structure(owner, repo)
     return structure
+
+def get_contributors(repo_url):
+    """Fetch the list of contributors for a given GitHub repository URL."""
+    owner, repo = parse_url(repo_url)
+    url = f"https://api.github.com/repos/{owner}/{repo}/contributors"
+
+    contributors = []
+    page = 1
+    per_page = 30
+
+    while True:
+        paged_url = f"{url}?page={page}&per_page={per_page}"
+        r = requests.get(paged_url, headers=headers)
+        r.raise_for_status()
+        data = r.json()
+        if not data:
+            break
+        contributors.extend([contributor["login"] for contributor in data])
+        page += 1
+
+    return contributors
