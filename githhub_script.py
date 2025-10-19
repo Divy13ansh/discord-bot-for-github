@@ -1,5 +1,6 @@
 import os
 import requests
+import base64
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -136,7 +137,6 @@ def get_file_content(repo_url, file_path):
     data = r.json()
 
     if "content" in data:
-        import base64
         content = base64.b64decode(data["content"]).decode('utf-8')
         return content
     else:
