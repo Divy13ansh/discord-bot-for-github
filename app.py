@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from githhub_script import get_repo_structure, repo_dict, get_contributors, get_commit_history, get_file_content
 from llms import analyze_repository_structure, analyze_file_content, summarize_file_content
+from cleaning import clean_md_content
 import os
 from dotenv import load_dotenv
 import io
@@ -56,6 +57,7 @@ async def helpme(ctx):
     `!commit_history <GitHub Repo URL>` - Fetch and display the commit history for a given GitHub repository.
     `!file_content <GitHub Repo URL> <file path>` - Fetch and display the content of a specific file from a GitHub repository.
     `!wtfishappening <GitHub Repo URL> <file path>` - Analyze the content of a specific file in a GitHub repository using AI.
+    `!summarizefile <GitHub Repo URL> <file path>` - Summarize the content of a specific file in a GitHub repository using AI.
     """
     await ctx.send(help_text)
 
@@ -81,7 +83,10 @@ async def wtfisthis(ctx, *, repository_url):
     """Uses AI to tell you whats going on in this repo"""
     # Placeholder for AI integration
     structure = get_repo_structure(repository_url)
-    analysis = analyze_repository_structure(structure)
+    readme_content = get_file_content(repository_url, "README.md")
+    repo_structure = f"README.md content:\n{readme_content}\n\nDirectory structure:\n{structure}"
+    analysis = analyze_repository_structure(repo_structure)
+    analysis = clean_md_content(analysis)
     file = io.StringIO(analysis)
     await ctx.send(f"Analysis of the repository:\n", file=discord.File(file, filename="repo_analysis.md"))
 
@@ -137,7 +142,8 @@ async def wtfishappening(ctx, repo_url, file_path):
     """Analyze the content of a specific file in a GitHub repository using AI."""
     try:
         content = get_file_content(repo_url, file_path)
-        analysis = analyze_file_content(content)
+        analysis = analyze_file_content(f"{content}, file path: {file_path}")
+        analysis = clean_md_content(analysis)
         file = io.StringIO(analysis)
         await ctx.send(f"Analysis of the file `{file_path}`:\n", file=discord.File(file, filename="file_analysis.md"))
     except Exception as e:
@@ -148,7 +154,8 @@ async def summarizefile(ctx, repo_url, file_path):
     """Summarize the content of a specific file in a GitHub repository using AI."""
     try:
         content = get_file_content(repo_url, file_path)
-        summary = summarize_file_content(content)
+        summary = summarize_file_content(f"{content}, file path: {file_path}")
+        summary = clean_md_content(summary)
         await ctx.send(f"Summary of the file `{file_path}`:\n {summary}")
     except Exception as e:
         await ctx.send(f"An error occurred while summarizing the file: {str(e)}")
