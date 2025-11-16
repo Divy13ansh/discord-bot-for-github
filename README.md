@@ -111,7 +111,3 @@ Contributions are welcome. Open an issue or a pull request with a description of
 - Add rate-limiting and caching for GitHub API calls.
 - Add tests and CI configuration.
 - Add a command permission system (only allow certain roles to call AI-intensive commands).
-
-## License
-
-This repository does not include a license file. If you plan to open-source it, add a `LICENSE` file (MIT, Apache-2.0, etc.).
