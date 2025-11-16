@@ -39,6 +39,10 @@ async def on_message(message):
 @bot.command()
 async def ping(ctx):
     await ctx.send("Pong! 🏓")
+    
+@bot.tree.command(name="ping", description="Slash command test")
+async def ping_slash(interaction: discord.Interaction):
+    await interaction.response.send_message("Pong! 🏓 (slash command)")
 
 # Command example: !say <message>
 @bot.command()
@@ -159,6 +163,16 @@ async def summarizefile(ctx, repo_url, file_path):
         await ctx.send(f"Summary of the file `{file_path}`:\n {summary}")
     except Exception as e:
         await ctx.send(f"An error occurred while summarizing the file: {str(e)}")
+
+
+
+
+@bot.event
+async def setup_hook():
+    guild = discord.Object(id=1350376354960506890)  # Replace with your server ID
+    bot.tree.copy_global_to(guild=guild)
+    await bot.tree.sync(guild=guild)
+    print(f"✅ Slash commands synced to guild!")
 
 # Run your bot
 bot.run(str(os.getenv("BOT_TOKEN")))
